@@ -41,7 +41,6 @@ class AnagramDictionary():
             letter = word[word_pos]
             if letter in self.node_list[array_pos]:
                 self._insert_word(word, word_pos + 1, self.node_list[array_pos][letter])
-                #possibly increment
             else:
                 for letter in word[word_pos:len(word) - 1]:
                     self.node_list[array_pos][letter] = len(self.node_list)
@@ -178,79 +177,15 @@ class Alphabet(Enum):
     
     
 if __name__ == "__main__":
-    import os
-    path = os.path.join("test_dictionary.txt")
-    anagram_dictionary = AnagramDictionary(path)
-    phrase = Phrase("redefined frights")
-    anagram_dictionary.find_anagrams(phrase)
+	import os, sys
+	if len(sys.argv) > 1:
+		path = os.path.join(*sys.argv[1:])
+	else:
+		path = "test_dictionary.txt"
+	anagram_dictionary = AnagramDictionary(path)
+	phrase = Phrase("redefined frights")
+	anagram_dictionary.find_anagrams(phrase)
 
 #can assert that things are in the alphabet in various places
 #revisit enumeration
 #try making this unicodish?
-            
-'''            
-class AnagramFinder():
-    def __init__(self, dictionary):
-        self.dictionary = dictionary
-        self.phrase = None
-        self.solution = None
-        self._stripped_phrase = None
-        
-    def set_phrase(self, phrase):
-        self.phrase = phrase            
-        self._stripped_phrase = self._remove_spaces(self.phrase)
-        
-    def find_anagrams(self, phrase = None):
-        if phrase:
-            self.set_phrase(phrase)
-        while len(self.solution) > 0: self.solution.pop()
-        self._backtrack()
-
-    def _backtrack(self):
-        if self._is_solution():
-            self._process_solution()
-        else:
-            candidates = self._construct_candidates()
-            for candidate in candidates:
-                self._make_move(candidate)
-                self._backtrack()
-                self._unmake_move(candidate)
-    
-    def _process_solution(self):
-        print self.solution 
-    
-    def _is_solution(self):
-        if len(self.solution) == len(self._stripped_phrase):
-            return True
-        else:
-            return False
-    
-    #def _construct_candidates(self):
-        
-    #def _make_move(self):
-        
-    #def _unmake_move
-    
-    
-    
-    def remove_spaces(self, phrase):
-        stripped_phrase = []
-        for char in phrase:
-            if char != ' ':
-                stripped_phrase.append(char)
-        return "".join(stripped_phrase)
-
-class AnagramFinderException():
-    pass
-        
-#elif not self.phrase:
-#   raise AnagramFinderException ("A phrase must be set either explicitely using set_phrase(phrase) or by passing a string to find_anagrams(phrase=None)")
-
-#class AnagramFinder():
-#    def __init__():
-#    
-#    def read_dictionary(self):
-        
-    
-'''
-        
