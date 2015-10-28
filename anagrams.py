@@ -21,19 +21,8 @@ class AnagramDictionary():
             while len(self.words) > 1: self.back_pointers.pop()
         with open(path, 'rb') as infile:
                 for line in infile:
-                    #print (line.strip())
-                    if self._is_alphabetical(line.strip()):#
-                        self._insert_word(line.strip())
+                	self._insert_word(line.strip())
                         
-    def _is_alphabetical(self, word):
-        alphabetical = True
-        letters = [letter.name for letter in Alphabet]
-        for letter in word:
-            if letter not in letters:
-                alphabetical = False
-        return alphabetical
-        #alternatively: do some cleanup process on the word in _insert_word
-    
     def _insert_word(self, word, word_pos=0, array_pos=0):
         if word_pos == len(word):
             self.words[array_pos] = word
@@ -44,7 +33,7 @@ class AnagramDictionary():
             else:
                 for letter in word[word_pos:len(word) - 1]:
                     self.node_list[array_pos][letter] = len(self.node_list)
-                    self.back_pointers.append(array_pos)###
+                    self.back_pointers.append(array_pos)
                     array_pos = len(self.node_list)
                     self.node_list.append({})
                     self.words.append(None)
@@ -60,19 +49,13 @@ class AnagramDictionary():
         self._backtrack(phrase, [])
         
     def _backtrack(self, phrase, solution, array_pos=0):
-        #print "backtracking. solution is {}, array_pos is {}".format(solution, array_pos)
         if self._is_solution(phrase, solution):
-            #print ("found a so-called solution")
             if self.words[array_pos]:
-                #print ("solution is a solution:")
                 self._process_solution(phrase, solution)
         else:
             candidates = self._construct_candidates(phrase, array_pos)
-            #print "chose candidates. Candidates are {}".format(candidates)
             for candidate in candidates:
-                #print ("iterating candidate loop. candidate is {}, array_pos is {}".format(candidate, array_pos))
                 array_pos = self._make_move(candidate, solution, array_pos, phrase)
-                #print "updated array position and chose candidate. Candidate is {}, array position is {}, solution is {}".format(candidate, array_pos, solution)
                 self._backtrack(phrase, solution, array_pos)
                 array_pos = self._unmake_move(solution, array_pos, candidate, phrase)
      
@@ -96,12 +79,10 @@ class AnagramDictionary():
         return array_pos
     
     def _unmake_move(self, solution, array_pos, candidate, phrase):
-        #print "unmaking move. array_pos before unmaking move is {}".format(array_pos)
         solution.pop()
         array_pos = self.back_pointers[array_pos]
         if candidate != ' ':
             phrase.dictionary[candidate] = phrase.dictionary[candidate] + 1
-        #print "unmade move. array_pos after unmaking move is {}".format(array_pos)
         return array_pos
         
     def _is_solution(self, phrase, solution):
@@ -119,13 +100,10 @@ class AnagramDictionary():
     
     def _process_solution(self, phrase, solution):
         self.anagrams.append("".join(solution))
-        print "{} is an anagram of {}".format("".join(solution), phrase.full)
-        #could make solution an instance of phrase
-    
+        print "{} is an anagram of {}".format("".join(solution), phrase.full) 
         
 class Phrase():
     def __init__(self, phrase):
-        #do some type checking
         self.full = phrase
         self.stripped = self._remove_spaces(self.full)
         self.dictionary = self._make_dictionary(self.stripped)
@@ -186,6 +164,3 @@ if __name__ == "__main__":
 	phrase = Phrase("redefined frights")
 	anagram_dictionary.find_anagrams(phrase)
 
-#can assert that things are in the alphabet in various places
-#revisit enumeration
-#try making this unicodish?
