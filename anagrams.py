@@ -29,6 +29,7 @@ class AnagramDictionary():
         self.start_node = Node()
         self.node_list = [self.start_node]
         self.anagrams = []
+        #self.logger = logging.getLogger("anagrams")
         if path:
             self.set_dictionary(path)
                 
@@ -55,22 +56,22 @@ class AnagramDictionary():
     
     def _insert_word(self, word, word_pos=0, array_pos=0):
         if word_pos == len(word):
-            print "word = {}".format(word)
+            logger.debug("word = {}".format(word))
             self.node_list[array_pos].word = word
         else:
             letter = word[word_pos]
             if letter in self.node_list[array_pos].forward:
-                print ("letter = {}. recursively calling _insert_word".format(letter))
+                logger.debug("letter = {}. recursively calling _insert_word".format(letter))
                 self._insert_word(word, word_pos + 1, self.node_list[array_pos].forward[letter])
             else:
                 for letter in word[word_pos:len(word) - 1]:
-                    print "word_pos, array_pos, letter = {}, {}, {}".format(word_pos, array_pos, letter)
+                    logger.debug("word_pos, array_pos, letter = {}, {}, {}".format(word_pos, array_pos, letter))
                     self.node_list[array_pos].forward[letter] = len(self.node_list)
                     back = array_pos
                     array_pos = len(self.node_list)
                     self.node_list.append(Node({}, back, None))
                 letter = word[len(word) - 1]
-                print "word_pos, array_pos, letter = {}, {}, {}".format(word_pos, array_pos, letter)
+                logger.debug ("word_pos, array_pos, letter = {}, {}, {}".format(word_pos, array_pos, letter))
                 self.node_list[array_pos].forward[letter] = len(self.node_list)
                 back = array_pos
                 array_pos = len(self.node_list)
@@ -81,19 +82,19 @@ class AnagramDictionary():
         self._backtrack(phrase, [])
         
     def _backtrack(self, phrase, solution, array_pos=0):
-        #print "backtracking. solution is {}, array_pos is {}".format(solution, array_pos)
+        logger.debug ("backtracking. solution is {}, array_pos is {}".format(solution, array_pos))
         if self._is_solution(phrase, solution):
-            #print ("found a so-called solution")
+            logger.debug("found a possible solution")
             if self.node_list[array_pos].word:
-                #print ("solution is a solution:")
+                logger.debug ("solution is a solution:")
                 self._process_solution(phrase, solution)
         else:
             candidates = self._construct_candidates(phrase, array_pos)
-            #print "chose candidates. Candidates are {}".format(candidates)
+            logger.debug("chose candidates. Candidates are {}".format(candidates))
             for candidate in candidates:
-                #print ("iterating candidate loop. candidate is {}, array_pos is {}".format(candidate, array_pos))
+                logger.debug("iterating candidate loop. candidate is {}, array_pos is {}".format(candidate, array_pos))
                 array_pos = self._make_move(candidate, solution, array_pos, phrase)
-                #print "updated array position and chose candidate. Candidate is {}, array position is {}, solution is {}".format(candidate, array_pos, solution)
+                logger.debug("updated array position and chose candidate. Candidate is {}, array position is {}, solution is {}".format(candidate, array_pos, solution))
                 self._backtrack(phrase, solution, array_pos)
                 array_pos = self._unmake_move(solution, array_pos, candidate, phrase)
      
@@ -198,7 +199,19 @@ class Alphabet(Enum):
     
     
 if __name__ == "__main__":
-    import os
+    import os, sys, logging
+    levels = {"debut":logging.DEBUG,
+             "info":logging.INFO,
+             "warning":logging.WARNING,
+             "error":logging.ERROR,
+             "critical":logging.CRITICAL}
+    if len(sys.argv) > 1:
+         level = levels.get(sys.argv[1], logging.NOTSET)
+    logger = logging.getLogger("anagrams")
+    logger.setLevel(logging.DEBUG)
+    handler = logging.FileHandler("anagram_dictionary.log", 'w')
+    logger.addHandler(handler)
+    
     path = os.path.join("test_dictionary.txt")
     anagram_dictionary = AnagramDictionary(path)
     phrase = Phrase("redefined frights")
