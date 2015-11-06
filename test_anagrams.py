@@ -1,3 +1,5 @@
+import logging
+import os
 import unittest
 from anagrams import AnagramDictionary, Phrase, Node
 '''
@@ -5,11 +7,13 @@ Created on Oct 26, 2015
 
 @author: templetonc
 '''
-
-
 class TestDictionary(unittest.TestCase):
     def setUp(self):
         self.dictionary = AnagramDictionary()
+        logger = logging.getLogger("anagrams")
+        logger.setLevel(logging.DEBUG)
+        handler = logging.FileHandler("anagram_dictionary_test.log", 'a')
+        logger.addHandler(handler)
     
     def test_insert_word(self):
         self.dictionary.clear_dictionary()
@@ -36,7 +40,7 @@ class TestDictionary(unittest.TestCase):
         print ("finished insert word test")
         
     def test_set_dictionary(self):
-        path = "test_dictionary.txt"
+        path = os.path.join("data", "test_dictionary.txt")
         self.dictionary.set_dictionary(path)
         assert len(self.dictionary.node_list) == 15, "node list length = {}".format(len(self.dictionary.node_list))
         assert self.dictionary.node_list == [Node({"f":1}, None, None), Node({"r":2}, 0, None), Node({"i":3, "e":7}, 1, None), Node({"e":4}, 2, None), Node({"n":5}, 3, None), Node({"d":6}, 4, None), Node({"s":12}, 5, "friend"), Node({"i":8}, 2, None), Node({"g":9}, 7, None), Node({"h":10}, 8, None), Node({"t":11}, 9, None), Node({"e":13}, 10, "freight"), Node({}, 6, "friends"), Node({"d":14}, 11, None), Node({}, 13, "freighted")], "node_list = {}".format(self.dictionary.node_list)
@@ -61,7 +65,7 @@ class TestDictionary(unittest.TestCase):
 
     def test_find_anagrams(self):
         print ("testing find_anagrams")
-        path = "test_dictionary.txt"
+        path = os.path.join("data", "test_dictionary.txt")
         self.dictionary.set_dictionary(path)
         phrase = Phrase("redefined frights")
         expected_anagrams = ["friends freighted", "freighted friends"]

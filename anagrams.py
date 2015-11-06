@@ -1,4 +1,5 @@
 from enum import Enum, unique
+import logging, os, sys
 '''
 Created on Oct 26, 2015
 
@@ -29,7 +30,8 @@ class AnagramDictionary():
         self.start_node = Node()
         self.node_list = [self.start_node]
         self.anagrams = []
-        #self.logger = logging.getLogger("anagrams")
+        self.logger1 = logging.getLogger("setup")
+        self.logger2 = logging.getLogger("lookup")
         if path:
             self.set_dictionary(path)
                 
@@ -39,7 +41,7 @@ class AnagramDictionary():
         with open(path, 'rb') as infile:
                 for line in infile:
                     word = line.strip()
-                    if self._is_alphabetical(word):
+                    if self._is_alphabetical(word) and len(word) > 3:
                         self._insert_word(word)
     
     def clear_dictionary(self):
@@ -56,22 +58,22 @@ class AnagramDictionary():
     
     def _insert_word(self, word, word_pos=0, array_pos=0):
         if word_pos == len(word):
-            logger.debug("word = {}".format(word))
+            self.logger1.debug("word = {}".format(word))
             self.node_list[array_pos].word = word
         else:
             letter = word[word_pos]
             if letter in self.node_list[array_pos].forward:
-                logger.debug("letter = {}. recursively calling _insert_word".format(letter))
+                self.logger1.debug("letter = {}. recursively calling _insert_word".format(letter))
                 self._insert_word(word, word_pos + 1, self.node_list[array_pos].forward[letter])
             else:
                 for letter in word[word_pos:len(word) - 1]:
-                    logger.debug("word_pos, array_pos, letter = {}, {}, {}".format(word_pos, array_pos, letter))
+                    self.logger1.debug("word_pos, array_pos, letter = {}, {}, {}".format(word_pos, array_pos, letter))
                     self.node_list[array_pos].forward[letter] = len(self.node_list)
                     back = array_pos
                     array_pos = len(self.node_list)
                     self.node_list.append(Node({}, back, None))
                 letter = word[len(word) - 1]
-                logger.debug ("word_pos, array_pos, letter = {}, {}, {}".format(word_pos, array_pos, letter))
+                self.logger1.debug ("word_pos, array_pos, letter = {}, {}, {}".format(word_pos, array_pos, letter))
                 self.node_list[array_pos].forward[letter] = len(self.node_list)
                 back = array_pos
                 array_pos = len(self.node_list)
@@ -82,19 +84,19 @@ class AnagramDictionary():
         self._backtrack(phrase, [])
         
     def _backtrack(self, phrase, solution, array_pos=0):
-        logger.debug ("backtracking. solution is {}, array_pos is {}".format(solution, array_pos))
+        self.logger2.debug ("backtracking. solution is {}, array_pos is {}".format(solution, array_pos))
         if self._is_solution(phrase, solution):
-            logger.debug("found a possible solution")
+            self.logger2.debug("found a possible solution")
             if self.node_list[array_pos].word:
-                logger.debug ("solution is a solution:")
+                self.logger2.debug ("solution is a solution:")
                 self._process_solution(phrase, solution)
         else:
             candidates = self._construct_candidates(phrase, array_pos)
-            logger.debug("chose candidates. Candidates are {}".format(candidates))
+            self.logger2.debug("chose candidates. Candidates are {}".format(candidates))
             for candidate in candidates:
-                logger.debug("iterating candidate loop. candidate is {}, array_pos is {}".format(candidate, array_pos))
+                self.logger2.debug("iterating candidate loop. candidate is {}, array_pos is {}".format(candidate, array_pos))
                 array_pos = self._make_move(candidate, solution, array_pos, phrase)
-                logger.debug("updated array position and chose candidate. Candidate is {}, array position is {}, solution is {}".format(candidate, array_pos, solution))
+                self.logger2.debug("updated array position and chose candidate. Candidate is {}, array position is {}, solution is {}".format(candidate, array_pos, solution))
                 self._backtrack(phrase, solution, array_pos)
                 array_pos = self._unmake_move(solution, array_pos, candidate, phrase)
      
@@ -199,7 +201,6 @@ class Alphabet(Enum):
     
     
 if __name__ == "__main__":
-    import os, sys, logging
     levels = {"debut":logging.DEBUG,
              "info":logging.INFO,
              "warning":logging.WARNING,
@@ -207,12 +208,22 @@ if __name__ == "__main__":
              "critical":logging.CRITICAL}
     if len(sys.argv) > 1:
          level = levels.get(sys.argv[1], logging.NOTSET)
-    logger = logging.getLogger("anagrams")
-    logger.setLevel(logging.DEBUG)
-    handler = logging.FileHandler("anagram_dictionary.log", 'w')
-    logger.addHandler(handler)
     
-    path = os.path.join("test_dictionary.txt")
+    logger1 = logging.getLogger("setup")
+    logger1.setLevel(logging.DEBUG)
+    handler1 = logging.FileHandler("anagram_dictionary_setup.log", 'w')
+    logger1.addHandler(handler1)
+    
+    logger2 = logging.getLogger("lookup")
+    logger2.setLevel(logging.DEBUG)
+    handler2 = logging.FileHandler("anagram_dictionary_lookup.log", 'w')
+    logger2.addHandler(handler2)
+    
+    path = os.path.join("data", "wordsEn.txt")
+    #path = os.path.join("test_dictionary.txt")
+    print ("preparing to populate dictionary")
     anagram_dictionary = AnagramDictionary(path)
-    phrase = Phrase("redefined frights")
+    phrase = Phrase("blue rider")
+    print ("preparing to look up phrase")
     anagram_dictionary.find_anagrams(phrase)
+    print ("finished")
